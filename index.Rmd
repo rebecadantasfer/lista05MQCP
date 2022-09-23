@@ -1,0 +1,56 @@
+---
+title: 'Teste de hipótese: o percentual de propostas aprovadas dos senadores do bloco
+  Resistência Democrática é menor que entre os demais senadores'
+author: "Rebeca Dantas"
+date: "2022-09-23"
+output: html_document
+---
+
+# **Introdução**:
+
+O objetivo é ver se existe diferença entre a média do percentual de propostas aprovadas entre os senadores em primeiro mandato que fazem parte do bloco Resistência Democrática e a média do percental geral.
+
+Usarei o teste t, pois, a amostra é menor que 30. Segundo Cervi, esse teste é útil para a verificação de médias de uma amostra em comparação com a população.Uma limitação desse teste é que depende que o Desvio Padrão da população seja conhecido, o que não costuma ser possível.
+
+# **Tratamento dos dados e realização do teste**
+
+```{r}
+library(tidyverse)
+library(infer)
+```
+
+```{r}
+senadores.novos<- readxl::read_excel("senadores em primeiro mandato.xlsx")
+proporcao_autoria_aprov<- senadores.novos%>%
+  select(NOME, PARTIDO, AUTORIA, APROVADAS)%>%
+  filter(AUTORIA!="0")%>%
+  mutate("PROPORCAO"=APROVADAS/AUTORIA)%>%
+  mutate('PERCENTUAL'=PROPORCAO*100)
+```
+
+```{r}
+mean(proporcao_autoria_aprov$PERCENTUAL)
+```
+
+```{r}
+proporcao_resistencia<- proporcao_autoria_aprov%>%
+  filter(PARTIDO%in%c('PT', 'PSB','PROS','REDE'))
+```
+
+H0: média do percentual de aprovação de projetos de lei entre os senadores em primeiro mandato = média do percentual de aprovação de projetos de lei entre os senadores em primeiro mandato que compõe o bloco resistêcia democrática. H1: média do percentual de aprovação de projetos de lei entre os senadores em primeiro mandato ≠ média do percentual de aprovação de projetos de lei entre os senadores em primeiro mandato que compõe o bloco resistêcia democrática.
+
+Em outras palavras: H0: mu= 0.7806674; H1≠0.7806674.
+
+```{r}
+shapiro.test(proporcao_resistencia$PERCENTUAL)
+```
+
+p-value=0.3661, logo, temos uma distribuição normal.
+
+```{r}
+t.test(proporcao_resistencia$PERCENTUAL, mu=0.7806674)
+```
+
+# **Conclusão**
+
+p-value=0.09728, ou seja, não podemos descartar a hipótese nula.Não podemos admitir que a média de percentual de propostas aprovadas é diferete entre os senadores do bloco Resistência Democrática.
